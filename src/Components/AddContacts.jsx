@@ -61,15 +61,18 @@ const AddContact = () => {
     }
   };
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Add your API call here
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulated API call
-      
-      // Reset form after successful submission
+      const contactData = {
+        ...formData,
+        tags: formData.tags.split(',').map(tag => tag.trim()), // Convert tags to array
+        image: image, // Include image if your backend supports it
+      };
+      await api.post('/contacts', contactData);
       setFormData({
         name: '',
         email: '',
@@ -77,22 +80,17 @@ const AddContact = () => {
         role: '',
         company: '',
         tags: '',
-        social: {
-          linkedin: '',
-          github: '',
-          twitter: ''
-        },
-        notes: ''
+        social: { linkedin: '', github: '', twitter: '' },
+        notes: '',
       });
       setImage(null);
-      
-      // Show success message
       alert('Contact added successfully!');
     } catch (error) {
       alert('Error adding contact. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
   };
 
   const InputField = ({ icon: Icon, ...props }) => (
@@ -315,6 +313,6 @@ const AddContact = () => {
       </motion.div>
     </div>
   );
-};
+
 
 export default AddContact;

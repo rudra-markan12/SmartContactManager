@@ -204,17 +204,17 @@ const Contacts = () => {
           onClick={() => setPage(prev => Math.max(0, prev - 1))}
           className="px-4 py-2 bg-purple-500 text-white rounded-lg disabled:opacity-50"
         >
-          Prev
-        </button>
-        <span className="text-gray-700">Page {page + 1} of {totalPages}</span>
-        <button
-          disabled={page >= totalPages - 1}
-          onClick={() => setPage(prev => prev + 1)}
-          className="px-4 py-2 bg-purple-500 text-white rounded-lg disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
+        Prev
+      </button>
+      <span className="text-gray-700">Page {page + 1} of {totalPages}</span>
+      <button
+        disabled={page >= totalPages - 1}
+        onClick={() => setPage(prev => prev + 1)}
+        className="px-4 py-2 bg-purple-500 text-white rounded-lg disabled:opacity-50"
+      >
+        Next
+      </button>
+    </div>
 
       {/* Contact Modal */}
       <AnimatePresence>
