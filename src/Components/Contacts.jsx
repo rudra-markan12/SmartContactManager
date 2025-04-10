@@ -1,53 +1,63 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  FaSearch, 
-  FaFilter, 
-  FaPhone, 
-  FaEnvelope, 
-  FaEllipsisV, 
-  FaUserCircle,
+import {
+  FaSearch,
+  FaFilter,
+  FaPhone,
+  FaEnvelope,
+  FaEllipsisV,
   FaLinkedin,
   FaGithub,
-  FaTwitter
+  FaTwitter,
 } from 'react-icons/fa';
+
+// Axios instance
+const api = axios.create({
+  baseURL: 'http://localhost:8080/api', // Change this to your backend base URL
+});
+
+// Dummy filter data
+const filters = [
+  { id: 'all', label: 'All Contacts' },
+  { id: 'work', label: 'Work' },
+  { id: 'friends', label: 'Friends' },
+  { id: 'family', label: 'Family' },
+];
 
 const Contacts = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [selectedContact, setSelectedContact] = useState(null);
+  const [contacts, setContacts] = useState([]);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
-  // Dummy data - replace with your actual data
-  const contacts = [
-    {
-      id: 1,
-      name: 'John Doe',
-      role: 'Software Engineer',
-      email: 'john.doe@example.com',
-      phone: '+1 (555) 123-4567',
-      company: 'Tech Corp',
-      tags: ['developer', 'frontend'],
-      social: {
-        linkedin: 'johndoe',
-        github: 'johndoe',
-        twitter: 'johndoe'
-      }
-    },
-    // Add more contacts as needed
-  ];
+  const userEmail = 'user@example.com'; // Replace with actual user email
 
-  const filters = [
-    { id: 'all', label: 'All Contacts' },
-    { id: 'developer', label: 'Developers' },
-    { id: 'frontend', label: 'Frontend' },
-    { id: 'backend', label: 'Backend' },
-  ];
+  useEffect(() => {
+    fetchContacts();
+  }, [page, selectedFilter]);
+
+  const fetchContacts = async () => {
+    try {
+      const response = await api.get('/contacts/user', {
+        params: { page, size: 10, email: userEmail },
+      });
+      setContacts(response.data.content);
+      setTotalPages(response.data.totalPages);
+    } catch (error) {
+      console.error('Error fetching contacts:', error);
+    }
+  };
 
   const filteredContacts = contacts.filter(contact => {
-    const matchesSearch = contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         contact.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = selectedFilter === 'all' || contact.tags.includes(selectedFilter);
+    const matchesSearch =
+      contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contact.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter =
+      selectedFilter === 'all' || contact.tags.includes(selectedFilter);
     return matchesSearch && matchesFilter;
   });
 
@@ -56,35 +66,26 @@ const Contacts = () => {
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
 
   const item = {
     hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
+    show: { opacity: 1, y: 0 },
   };
 
   return (
     <div className="pt-20 px-4 md:px-8">
-      {/* Header Section */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
-      >
+      {/* Header */}
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
         <h1 className="text-4xl font-bold text-gray-800">Contacts</h1>
         <p className="text-gray-600 mt-2">Manage your network effectively</p>
       </motion.div>
 
-      {/* Search and Filter Bar */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="mb-8 flex flex-col md:flex-row gap-4"
-      >
-        {/* Search Input */}
+      {/* Search + Filter */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-8 flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
           <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
@@ -106,7 +107,7 @@ const Contacts = () => {
             <span>Filter</span>
           </button>
 
-          {/* Filter Dropdown */}
+          {/* Filter Options */}
           <AnimatePresence>
             {filterOpen && (
               <motion.div
@@ -122,8 +123,9 @@ const Contacts = () => {
                       setSelectedFilter(filter.id);
                       setFilterOpen(false);
                     }}
-                    className={`w-full text-left px-4 py-2 hover:bg-purple-50 transition-colors duration-150
-                      ${selectedFilter === filter.id ? 'bg-purple-50 text-purple-600' : 'text-gray-700'}`}
+                    className={`w-full text-left px-4 py-2 hover:bg-purple-50 transition-colors duration-150 ${
+                      selectedFilter === filter.id ? 'bg-purple-50 text-purple-600' : 'text-gray-700'
+                    }`}
                   >
                     {filter.label}
                   </button>
@@ -135,12 +137,7 @@ const Contacts = () => {
       </motion.div>
 
       {/* Contacts Grid */}
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-      >
+      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredContacts.map(contact => (
           <motion.div
             key={contact.id}
@@ -178,10 +175,7 @@ const Contacts = () => {
 
               <div className="mt-4 flex items-center gap-2">
                 {contact.tags.map(tag => (
-                  <span
-                    key={tag}
-                    className="px-2 py-1 bg-purple-50 text-purple-600 rounded-full text-xs"
-                  >
+                  <span key={tag} className="px-2 py-1 bg-purple-50 text-purple-600 rounded-full text-xs">
                     {tag}
                   </span>
                 ))}
@@ -203,7 +197,26 @@ const Contacts = () => {
         ))}
       </motion.div>
 
-      {/* Contact Detail Modal */}
+      {/* Pagination Controls */}
+      <div className="mt-8 flex justify-center gap-4">
+        <button
+          disabled={page === 0}
+          onClick={() => setPage(prev => Math.max(0, prev - 1))}
+          className="px-4 py-2 bg-purple-500 text-white rounded-lg disabled:opacity-50"
+        >
+          Prev
+        </button>
+        <span className="text-gray-700">Page {page + 1} of {totalPages}</span>
+        <button
+          disabled={page >= totalPages - 1}
+          onClick={() => setPage(prev => prev + 1)}
+          className="px-4 py-2 bg-purple-500 text-white rounded-lg disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
+
+      {/* Contact Modal */}
       <AnimatePresence>
         {selectedContact && (
           <motion.div
@@ -215,7 +228,7 @@ const Contacts = () => {
           >
             <motion.div
               layoutId={`contact-${selectedContact.id}`}
-              onClick={e => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
               className="bg-white rounded-xl shadow-xl w-full max-w-2xl"
             >
               <div className="p-6">
@@ -230,10 +243,7 @@ const Contacts = () => {
                       <p className="text-gray-500">{selectedContact.company}</p>
                     </div>
                   </div>
-                  <button
-                    onClick={() => setSelectedContact(null)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
+                  <button onClick={() => setSelectedContact(null)} className="text-gray-400 hover:text-gray-600">
                     ×
                   </button>
                 </div>
@@ -256,18 +266,15 @@ const Contacts = () => {
                   <div className="space-y-4">
                     <h3 className="font-semibold text-gray-800">Social Profiles</h3>
                     <div className="flex items-center gap-4">
-                      <a href={`https://linkedin.com/in/${selectedContact.social.linkedin}`}
-                         className="flex items-center gap-2 text-gray-600 hover:text-blue-600">
+                      <a href={`https://linkedin.com/in/${selectedContact.social.linkedin}`} className="flex items-center gap-2 text-gray-600 hover:text-blue-600">
                         <FaLinkedin />
                         <span>LinkedIn</span>
                       </a>
-                      <a href={`https://github.com/${selectedContact.social.github}`}
-                         className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
+                      <a href={`https://github.com/${selectedContact.social.github}`} className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
                         <FaGithub />
                         <span>GitHub</span>
                       </a>
-                      <a href={`https://twitter.com/${selectedContact.social.twitter}`}
-                         className="flex items-center gap-2 text-gray-600 hover:text-blue-400">
+                      <a href={`https://twitter.com/${selectedContact.social.twitter}`} className="flex items-center gap-2 text-gray-600 hover:text-blue-400">
                         <FaTwitter />
                         <span>Twitter</span>
                       </a>

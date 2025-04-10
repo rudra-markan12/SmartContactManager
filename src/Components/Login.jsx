@@ -240,7 +240,7 @@ const Login = () => {
           </div>
         </form>
       </motion.div>
-    </div>
+    </div>  
   );
 };
 

@@ -234,7 +234,7 @@ const Profile = () => {
                     <FaSignOutAlt className="text-gray-500" />
                     <span className="font-medium text-gray-700">Sign Out</span>
                   </div>
-                  <FaChevronRight className="text-gray-400" />
+                
                 </button>
 
                 <button
@@ -245,7 +245,7 @@ const Profile = () => {
                     <FaTrash className="text-red-500" />
                     <span className="font-medium text-red-700">Delete Account</span>
                   </div>
-                  <FaChevronRight className="text-red-400" />
+               
                 </button>
               </div>
             </div>
